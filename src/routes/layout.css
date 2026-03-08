@@ -1,0 +1,42 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@layer base {
+	body {
+		font-family: 'KaTeX_Main', serif;
+		font-size: 2.8vw;
+		overflow-x: hidden;
+		print-color-adjust: exact;
+		background-color: oklch(0.1803 0.016 284.35);
+		@apply text-slate-200;
+	}
+
+	h1 {
+		@apply text-[2em] font-bold;
+	}
+
+	h2 {
+		@apply text-[1.5em] font-bold;
+	}
+	h3 {
+		@apply text-[1.2em];
+	}
+
+	ul {
+		@apply list-disc pl-[2ch];
+	}
+
+	@counter-style my-new-list-style {
+		system: extends lower-roman;
+		suffix: ') ';
+	}
+
+	ol {
+		@apply list-[my-new-list-style] pl-[2ch];
+	}
+}
+
+@theme {
+	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
