@@ -1,5 +1,6 @@
 .envrc
 .direnv
+slides.pdf
 
 node_modules
 
