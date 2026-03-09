@@ -11,7 +11,7 @@
 	import AlsPractice from './AlsPractice.svelte';
 	import ConvexRelaxationPractice from './ConvexRelaxationPractice.svelte';
 
-	const genRandomMatrix = (hidden = 0.6) =>
+	const genRandomMatrix = (hidden = 0.0) =>
 		Matrix.fromFn(6, 8, (i, j) =>
 			Math.random() > hidden
 				? Math.round((((Math.sin(i + j + Math.random() / 2) + 1) / 2) * 10) / 2)
@@ -19,6 +19,7 @@
 		);
 
 	let randomMatrix = $state(genRandomMatrix());
+	const variableIndices = randomMatrix.map(() => (Math.random() > 0.6 ? null : 0));
 
 	let slideIndex = $state(parseInt(page.url.searchParams.get('slide') || '0'));
 	let printing = $state(JSON.parse(page.url.searchParams.get('print') ?? 'false'));
@@ -28,13 +29,23 @@
 		goto(`/?slide=${slideIndex}&print=${printing}`);
 	});
 
-	const randomMatrixInterval = setInterval(() => (randomMatrix = genRandomMatrix()), 1000);
+	const randomMatrixInterval = setInterval(
+		() =>
+			(randomMatrix = new Matrix(
+				randomMatrix.data.map((row, i) =>
+					row.map((elem, j) =>
+						variableIndices.data[i][j] === null ? parseInt((Math.random() * 5).toFixed(0)) : elem
+					)
+				)
+			)),
+		50
+	);
 
 	onDestroy(() => {
 		clearInterval(randomMatrixInterval);
 	});
 
-	const names = ['Alma', 'Pablo', 'Isa', 'Chaya'];
+	const names = ['Student 1', 'Student 2', 'Student 3', 'Student 4'];
 	const movies = [
 		{
 			name: 'Inception',
@@ -145,7 +156,19 @@
 
 	{#snippet motivation2()}
 		<p>Generally: we are given an incomplete matrix</p>
-		<Katex expr={randomMatrix.tex()} />
+		<Katex
+			expr={'\\begin{bmatrix}' +
+				randomMatrix.data
+					.map((row, i) =>
+						row
+							.map((elem, j) =>
+								variableIndices.data[i][j] === null ? `\\htmlClass{text-purple-300}{${elem}}` : elem
+							)
+							.join('&')
+					)
+					.join('\\\\') +
+				'\\end{bmatrix}'}
+		/>
 		<b>How can we fill it in?</b>
 	{/snippet}
 
@@ -155,14 +178,21 @@
 				Problem is <span class="text-purple-300"> underdetermined</span>, <br /> so we impose some condition:
 			</h3>
 			<ul class="mt-8">
+				<li {@attach show(i, 1)}>
+					<span class={['transition-opacity', i >= 5 && 'opacity-60']}> Arbitrarily</span>
+				</li>
 				<li
-					{@attach show(i, 1)}
-					class={['w-fit rounded', i >= 4 ? 'bg-yellow-300/40 pr-4 pl-4' : 'pr-8']}
+					{@attach show(i, 2)}
+					class={['w-fit rounded', i >= 5 ? 'bg-purple-500/20 pr-4 pl-4' : 'pr-8']}
 				>
 					Rank minimization
 				</li>
-				<li {@attach show(i, 2)}>Positive-definiteness</li>
-				<li {@attach show(i, 3)}>Maximal determinant</li>
+				<li {@attach show(i, 3)}>
+					<span class={['transition-opacity', i >= 5 && 'opacity-60']}> Positive-definiteness</span>
+				</li>
+				<li {@attach show(i, 4)}>
+					<span class={['transition-opacity', i >= 5 && 'opacity-60']}> Maximal determinant</span>
+				</li>
 			</ul>
 		</div>
 	{/snippet}
@@ -238,10 +268,10 @@
 					Solving the optimization problem is usually complicated (NP-hard), so it is usually
 					relaxed to
 					<Katex
-						expr={`\\begin{aligned}
-					&\\min_{X\\in \\mathbb{R}^{m\\times n}} ||X||_*=\\sum_{k=1}^n\\sigma_k(X)\\\\
-					& \\text{s.t. } X_{i,j}=A_{i,j}\\quad \\forall (i,j)\\in \\Omega
-                    \\end{aligned}`}
+						expr={`\\begin{align*}
+					\\min_{X\\in \\mathbb{R}^{m\\times n}} \\quad & ||X||_*=\\sum_{k=1}^r\\sigma_k(X)\\\\
+					 \\text{s.t. } \\quad & X_{i,j}=A_{i,j}\\quad \\forall (i,j)\\in \\Omega
+                    \\end{align*}`}
 					/>
 				</p>
 			</div>
@@ -370,10 +400,9 @@
 							the least squares problem
 						</p>
 						<Katex
-							expr={`\\begin{aligned}
-								&\\min ||P_{\\Omega}(X)-P_\\Omega(Y)||_{F}\\\\
-								&\\text{s.t. } X\\in \\mathbb{R}^{m\\times n}
-							\\end{aligned}`}
+							expr={`\\begin{align*}
+								\\min  &\\quad||P_{\\Omega}(X)-P_\\Omega(Y)||_{F}\\\\
+								\\text{s.t. }& \\quad X\\in T							\\end{align*}`}
 						/>
 						<p class="w-[70ch]">Then we can expect an accuracy of</p>
 						<Katex expr={`||A^\\text{Oracle}-A||_F\\approx \\delta p^{-1/2}`} />
@@ -403,43 +432,6 @@
 		</div>
 	{/snippet}
 
-	{#snippet classExample(i)}
-		{@const matrix = mainExampleMatrix}
-		<p class="w-full text-left opacity-50">But first...</p>
-		<div
-			class="grid"
-			style:grid-template-columns="repeat({movies.length + 1}, 1fr)"
-			{@attach show(i, 1)}
-		>
-			<div class="text-[0.6em]">
-				<Katex expr={matrix.tex('\\quad \\quad')} />
-			</div>
-			{#each movies as { name, posterUrl } (name)}
-				<img src={posterUrl} alt="{name}'s poster" class="mx-auto h-80 object-contain" />
-			{/each}
-
-			{#each names as name, i (name)}
-				<div>
-					{name}:
-				</div>
-				{#each movies as { name }, j (name)}
-					<div class="flex w-full items-center justify-center gap-5 text-[0.6em]">
-						{#each [1, -1] as value (value)}
-							<button
-								class="h-fit rounded {matrix.get(i, j) !== value
-									? 'opacity-50 hover:opacity-90 active:opacity-100'
-									: 'bg-gray-600/30'} p-1 transition"
-								onclick={() => (matrix.data[i][j] = matrix.data[i][j] === value ? null : value)}
-							>
-								{value === 1 ? '👍' : '👎'}
-							</button>
-						{/each}
-					</div>
-				{/each}
-			{/each}
-		</div>
-	{/snippet}
-
 	{#snippet convex1(i: number)}
 		<h2 class="mb-8">i) Convex relaxation</h2>
 		<div class="text-left">
@@ -447,13 +439,19 @@
 				Problem: rank is a <span class="text-purple-300"> non-convex </span> function
 			</p>
 			<p {@attach show(i, 1)}>
-				Solution: minimize the <i> nuclear norm </i>
+				Relaxation: minimize the <i> nuclear norm </i>
 			</p>
 
-			<div {@attach show(i, 2)} class="mt-8">
-				<Katex expr="\|X\|_* = \sum_k \sigma_k(X)" />
+			<div {@attach show(i, 1)} class="mt-8">
+				<!-- <Katex expr="\|X\|_* = \sum_k \sigma_k(X)" /> -->
+				<Katex
+					expr={`\\begin{align*}
+				\\min_{X\\in \\mathbb{R}^{m\\times n}} \\quad & ||X||_*=\\sum_{k=1}^r\\sigma_k(X)\\\\
+				 \\text{s.t. } \\quad & X_{i,j}=A_{i,j}\\quad \\forall (i,j)\\in \\Omega
+                    \\end{align*}`}
+				/>
 			</div>
-			<div {@attach show(i, 3)} class="mt-8">
+			<div {@attach show(i, 2)} class="mt-8">
 				<Katex
 					expr={`\\begin{align*}
                 		 \\operatorname{rank} & \\sim \\ell_0 \\\\
@@ -477,9 +475,7 @@
 		/>
 
 		<ul class="max-w-[40ch] text-left font-[0.7em] opacity-90">
-			<li {@attach show(i, 1)}>
-				Heuristically sensible, rigorous results based on Restricted Isometry Property (RIP)
-			</li>
+			<li {@attach show(i, 1)}>Heuristically sensible</li>
 			<li {@attach show(i, 2)}>
 				Time complexity <K expr={`\\mathcal{O}(\\max(n, m)^4)`} />, SOTA breaks down after <K
 					expr="100\times100"
@@ -496,7 +492,8 @@
 			<div>
 				Let <K expr="X = U V^T" />,
 				<Katex
-					expr={`U, V \\in \\mathbb{R}^{n \\times r} \\Rightarrow \\operatorname{rank}(X) = r`}
+					expr={`U, V \\in \\mathbb{R}^{n \\times r} \\Rightarrow \\operatorname{rank}(X)
+				\\leq r`}
 				/>
 			</div>
 		</div>
@@ -520,7 +517,7 @@
 			<p>Convex? No, but...</p>
 			<p {@attach show(i, 1)}>
 				... it is convex over <K expr="U" /> or <K expr="V" />
-				<span class="text-purple-300"> independetly </span>
+				<span class="text-purple-300"> independently </span>
 			</p>
 
 			<div {@attach show(i, 3)}>
@@ -545,6 +542,46 @@
 			But also vectorizing (i.e., stacking <K expr="\Delta U" /> and
 			<K expr="\Delta V^T" />)
 		</p>
+	{/snippet}
+	{#snippet classExample(i)}
+		{@const matrix = mainExampleMatrix}
+		<p class="mb-8 w-full text-left opacity-80">Let's see them in practice! But first...</p>
+		<div
+			class="grid"
+			style:grid-template-columns="repeat({movies.length + 1}, 1fr)"
+			{@attach show(i, 1)}
+		>
+			<div class="text-[0.6em]">
+				<Katex expr={matrix.tex('\\quad \\quad')} />
+			</div>
+			{#each movies as { name, posterUrl } (name)}
+				<img src={posterUrl} alt="{name}'s poster" class="mx-auto h-80 object-contain" />
+			{/each}
+
+			{#each names as name, i (name)}
+				<div class=" text-right">
+					<input
+						bind:value={names[i]}
+						class="w-[calc(100%-1em)] border-none bg-black/0 text-right text-[1em]"
+						onkeydown={(e) => e.stopPropagation()}
+					/>:
+				</div>
+				{#each movies as { name }, j (name)}
+					<div class="flex w-full items-center justify-center gap-5 text-[0.6em]">
+						{#each [1, -1] as value (value)}
+							<button
+								class="h-fit rounded {matrix.get(i, j) !== value
+									? 'opacity-50 hover:opacity-90 active:opacity-100'
+									: 'bg-gray-600/30'} p-1 transition"
+								onclick={() => (matrix.data[i][j] = matrix.data[i][j] === value ? null : value)}
+							>
+								{value === 1 ? '👍' : '👎'}
+							</button>
+						{/each}
+					</div>
+				{/each}
+			{/each}
+		</div>
 	{/snippet}
 	{#snippet algsPractice1(i: number)}
 		<p class="absolute top-[1ch] left-[1ch] text-left opacity-50">
@@ -580,7 +617,7 @@
 				<li {@attach show(i, 2)}>
 					<span class="text-purple-300 underline">Theory:</span>
 					<ul>
-						<li>Low rank: standard</li>
+						<li>Low rank: fundamental formulation</li>
 						<li>Low rank with noise: more realistic</li>
 					</ul>
 				</li>

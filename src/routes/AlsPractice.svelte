@@ -115,6 +115,8 @@
 		<Katex expr={`V = ${V.tex('?', (x) => x?.toFixed(2) ?? null)}`} />
 		<Katex expr={`U = ${U.tex('?', (x) => x?.toFixed(2) ?? null)}`} />
 	</div>
-	<Katex expr={`X = ${X.tex('?', (x) => x?.toFixed(2) ?? null)}`} />
-	Error: {error.toExponential(3)}
+	<div class="flex items-center gap-8">
+		<Katex expr={`X = ${X.tex('?', (x) => x?.toFixed(2) ?? null)}`} />
+		Error: {error.toExponential(3)}
+	</div>
 {/if}

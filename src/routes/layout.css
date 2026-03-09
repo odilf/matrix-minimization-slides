@@ -5,10 +5,12 @@
 @layer base {
 	body {
 		font-family: 'KaTeX_Main', serif;
-		font-size: 2.8vw;
+		font-size: 3rem;
 		overflow-x: hidden;
 		print-color-adjust: exact;
-		background-color: oklch(0.1803 0.016 284.35);
+		background-color: oklch(0.2803 0.016 284.35);
+
+		/*background-color: red;*/
 		@apply text-slate-200;
 	}
 

@@ -54,7 +54,7 @@
 	{/each}
 
 	<div
-		class="absolute bottom-0 left-0 h-1 bg-purple-950 transition-all"
+		class="absolute bottom-0 left-0 h-2 bg-purple-900 transition-all"
 		style:width="{(slideIndex / (slides.length - 1)) * 100}vw"
 	></div>
 </main>

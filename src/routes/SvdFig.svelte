@@ -10,7 +10,7 @@
 			<div class="flex h-[6em] w-[4em] items-center justify-center border border-slate-200">
 				<Katex expr={`\\mathbf{A}`} />
 			</div>
-			<span class="absolute -translate-x-[170%] translate-y-[380%] rotate-270 text-[0.6em]"
+			<span class="absolute -translate-x-[140%] translate-y-[400%] rotate-270 text-[0.6em]"
 				>#users</span
 			>
 		</div>
@@ -26,7 +26,7 @@
 			<div class="flex h-[6em] w-[2em] items-center justify-center border border-slate-200">
 				<Katex expr={`\\mathbf{U}`} />
 			</div>
-			<span class="absolute -translate-x-[95%] translate-y-[380%] rotate-270 text-[0.6em]"
+			<span class="absolute -translate-x-[80%] translate-y-[400%] rotate-270 text-[0.6em]"
 				>#users</span
 			>
 		</div>
@@ -46,7 +46,7 @@
 				<Katex expr={`\\mathbf{V}^T`} />
 			</div>
 			<span
-				class="absolute translate-x-[125%] translate-y-[168%] rotate-90 text-[0.6em] text-yellow-200"
+				class="absolute translate-x-[110%] translate-y-[160%] rotate-90 text-[0.6em] text-yellow-200"
 				>#factors</span
 			>
 		</div>

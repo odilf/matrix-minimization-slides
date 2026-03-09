@@ -16,7 +16,10 @@
         "x86_64-darwin"
       ];
       perSystem =
-        { pkgs, ... }:
+        { pkgs, lib, ... }:
+        let
+          inherit (pkgs.stdenv.hostPlatform) isLinux;
+        in
         {
           devShells.default = pkgs.mkShell {
             packages = [
@@ -27,12 +30,18 @@
               pkgs.typescript-language-server
               pkgs.superhtml
               pkgs.vscode-langservers-extracted
-
-              pkgs.chromium
-            ];
+            ]
+            ++ (
+              if isLinux then
+                [
+                  pkgs.chromium
+                ]
+              else
+                [ ]
+            );
 
             PUPPETEER_SKIP_DOWNLOAD = 1;
-            CHROMIUM_PATH = "${pkgs.chromium}/bin/chromium-browser";
+            CHROMIUM_PATH = if isLinux then "${pkgs.chromium}/bin/chromium-browser" else "";
           };
         };
       flake = {
