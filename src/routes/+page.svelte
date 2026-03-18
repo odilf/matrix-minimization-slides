@@ -22,7 +22,7 @@
 	const variableIndices = randomMatrix.map(() => (Math.random() > 0.6 ? null : 0));
 
 	let slideIndex = $state(parseInt(page.url.searchParams.get('slide') || '0'));
-	let printing = $state(JSON.parse(page.url.searchParams.get('print') ?? 'false'));
+	let printing: boolean = $state(JSON.parse(page.url.searchParams.get('print') ?? 'false'));
 
 	$effect(() => {
 		// eslint-disable-next-line svelte/no-navigation-without-resolve
@@ -81,7 +81,11 @@
 
 	const stored = sessionStorage.getItem('mainExampleMatrix');
 	let mainExampleMatrix = $state(
-		stored ? new Matrix(JSON.parse(stored)) : Matrix.empty(names.length, movies.length)
+		stored
+			? new Matrix(JSON.parse(stored))
+			: Matrix.fromFn(names.length, movies.length, () =>
+					!printing ? null : Math.random() > 0.6 ? 1 : Math.random() > 0.2 ? -1 : null
+				)
 	);
 
 	$effect(() => {
